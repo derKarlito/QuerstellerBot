@@ -3,8 +3,10 @@ import requests
 import re
 import src
 from src import WebService
+from src.Calender import Calender
 from src.QuestionStates import QuestionStates
 from src.User import User
+from src.UserService import UserService
 
 STATE = None
 users = []
@@ -12,7 +14,8 @@ users = []
 updater = Updater(token='1764397833:AAHigJWCNjCuhkYoBP5e8Mptv8ahji78PkU',
                   use_context=True)  # Replace TOKEN with your token string
 dispatcher = updater.dispatcher
-
+userService = UserService()
+global calender
 
 def start(update, context):
     text = "Hi!\nDies ist der Quersteller Bot. Bitte lege deinen bevorzugten Benachrichtigungsstandort mit /localHeroAt \n" \
@@ -44,7 +47,7 @@ def update_location(context, update):
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]))
         i -= 1
-    users.append(User(update.effective_chat.id, locations))
+    userService.add_user(User(locations,context,update))
     STATE = QuestionStates.MORELOCATION
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sind das alle?(Ja/Nein)")
 
@@ -57,6 +60,7 @@ def add_location(context,update):
             x.locations.append(locations)
             break
     context.bot.send_message(chat_id=update.effective_chat.id,text="Hab ich geupdated ^^\nIch melde mich wenn es was zu tun gibt!")
+
 
 
 def continue_location(context,update):
@@ -77,11 +81,17 @@ def text(update, context):
     elif STATE == QuestionStates.ADDLOCATION:
         add_location(context,update)
 
+def organizeCalender():
+    querdenkerCalenderUnSorted = WebService.GetCalender()
+    calender = Calender(querdenkerCalenderUnSorted)
+    userService.add_calender(calender)
+    return calender
+
 
 def main():
     # create the updater, that will automatically create also a dispatcher and a queue to
     # make them dialoge
-    WebService.GetCalender()
+    organizeCalender()
     updater = Updater(token='1764397833:AAHigJWCNjCuhkYoBP5e8Mptv8ahji78PkU',
                   use_context=True)
     dispatcher = updater.dispatcher
@@ -102,6 +112,7 @@ def main():
 
     # run the bot until Ctrl-C
     updater.idle()
+
 
 
 if __name__ == '__main__':

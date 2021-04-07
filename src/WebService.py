@@ -17,37 +17,61 @@ def GetCalender():
 
     # Parse the html content
     soup = BeautifulSoup(html_content, "lxml")
-    offset = 8
-    ort = None
-    Datum = None
-    Uhrzeit = None
-    Adresse = None
-    Art = None
-    Veranstalter = None
-    for link in soup.find_all('td'):
-        str = link.contents
-        if len(str) != 0:
-            if offset == 8:
-                Datum = str[0]
-            elif offset == 5:
-                ort = str[0]
-            elif offset == 4:
-                Uhrzeit = str[0]
-            elif offset == 3:
-                Adresse = str[0]
-            elif offset == 2:
-                Art = str[0]
-            elif offset == 1:
-                Veranstalter = str[0]
-        offset -= 1
-        if offset == 0:
-            offset = 8
 
-    event = EventInfo(ort,Uhrzeit,Adresse,Art,Veranstalter,Datum)
-    #TODO: get Name of City
-    print(event)
+    eventInfos = []
+    test = soup.find_all('td')
+    index = 0
+    for entry in test:
+        if index <= 3:
+            index += 1
+            continue
+        eventInfos.append(entry.text)
 
+    Date = None
+    Plz = None
+    City = None
+    Time = None
+    Place = None
+    How = None
+    Organizer = None
+    eventlist = []
+    for i in range(0,len(eventInfos)-1,8):
+        counter = 0
+        for j in range(i,i+7):
+            if counter == 0:
+                Date = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 1:
+                counter += 1
+                continue
+            if counter == 2:
+                Plz = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 3:
+                City = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 4:
+                Time = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 5:
+                Place = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 6:
+                How = eventInfos[j]
+                counter += 1
+                continue
+            if counter == 7:
+                Organizer = eventInfos[j]
+                counter += 1
+                continue
 
+        eventlist.append(EventInfo(Plz,Time,Place,How,Organizer,Date,City))
+    return eventlist
 
 
 
