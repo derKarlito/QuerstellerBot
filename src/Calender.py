@@ -21,9 +21,11 @@ class Calender:
         dates = {}
         for location in locations:
             for event in self.unsortedEvents:
-                #TODO: delete whitespace etc from location when initializing
                 if(event.Ort == location):
-                    dates[event.Time].append(location)
+                    if(event.Time in dates):
+                        dates[event.Time].append(event)
+                    else:
+                        dates.__setitem__(event.Time,[event])
 
         return dates
 

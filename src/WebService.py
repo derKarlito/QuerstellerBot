@@ -50,7 +50,7 @@ def GetCalender():
                 counter += 1
                 continue
             if counter == 3:
-                City = eventInfos[j]
+                City = eventInfos[j].strip()
                 counter += 1
                 continue
             if counter == 4:

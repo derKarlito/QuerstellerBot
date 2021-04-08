@@ -36,6 +36,10 @@ def update_location(context, update):
     global STATE
     text = update.message.text
     locations = text.split(',')
+    tempLocations = []
+    for location in locations:
+        tempLocations.append(location.strip())
+    locations = tempLocations
     i = len(locations) - 1
     context.bot.send_message(chat_id=update.effective_chat.id, text="Du bist also in:")
     while i >= 0:
@@ -47,7 +51,7 @@ def update_location(context, update):
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]))
         i -= 1
-    userService.add_user(User(locations,context,update))
+    userService.add_user(User(locations, context, update))
     STATE = QuestionStates.MORELOCATION
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sind das alle?(Ja/Nein)")
 
@@ -55,10 +59,10 @@ def add_location(context,update):
     global users
     text = update.message.text
     locations = text.split(',')
-    for x in users:
-        if x.id == update.effective_chat.id:
-            x.locations.append(locations)
-            break
+    for location in locations:
+        location.strip()
+    userService.add_locations_to_user(locations,update.effective_chat.id)
+    userService.check_for_news(userService.get_user_by_id(update.effective_chat.id))
     context.bot.send_message(chat_id=update.effective_chat.id,text="Hab ich geupdated ^^\nIch melde mich wenn es was zu tun gibt!")
 
 
@@ -67,6 +71,8 @@ def continue_location(context,update):
     global STATE
     if update.message.text == "Ja":
         context.bot.send_message(chat_id=update.effective_chat.id, text="Alles klar! \n Ich werde mich wieder melden, wenn ich weiß wo wir uns das nächte mal Querstellen statt quer zu denken.")
+        user = userService.get_user_by_id(update.effective_chat.id)
+        userService.check_for_news(user)
     elif update.message.text == "Nein":
         STATE = QuestionStates.ADDLOCATION
         context.bot.send_message(chat_id=update.effective_chat.id, text="Welche Orte möchtest du hinzufügen? Du kannst auch ländlichere Gebiete mit einfügen :)")
