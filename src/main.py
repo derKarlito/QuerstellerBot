@@ -18,7 +18,7 @@ userService = UserService()
 global calender
 
 def start(update, context):
-    text = "Hi!\nDies ist der Quersteller Bot. Bitte lege deinen bevorzugten Benachrichtigungsstandort mit /localHeroAt \n" \
+    text = "Hi!\nDies ist der Quersteller Bot. Bitte lege deinen bevorzugten Benachrichtigungsstandort mit /localHeroAt fest. \n" \
            "Ich werde dich benachrichtigen wenn Querdenker in deiner Nähe etwas geplant haben. Ich finde dagegen sollte man etwas unternehmen!"
 
     chat_id = update.message.chat_id
