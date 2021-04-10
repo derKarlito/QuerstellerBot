@@ -1,14 +1,15 @@
 from src.StringHelper import StringHelper
-#from src.DatabaseService import DatabaseService
+from src.DatabaseService import DatabaseService
 
 
 class UserService:
     users = []
     calender = None
-    #dbService = DatabaseService()
+    dbService = DatabaseService()
+
     def add_user(self, user):
         self.users.append(user)
-        #self.dbService.add_user_to_database(user)
+        self.dbService.insert(user)
 
     def add_calender(self, calender):
         if calender is not None:

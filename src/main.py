@@ -7,15 +7,17 @@ from src.Calender import Calender
 from src.QuestionStates import QuestionStates
 from src.User import User
 from src.UserService import UserService
+from src.DatabaseService import DatabaseService
 
 STATE = None
 users = []
-
+# Replace TOKEN with your token string
 updater = Updater(token='1764397833:AAHigJWCNjCuhkYoBP5e8Mptv8ahji78PkU',
-                  use_context=True)  # Replace TOKEN with your token string
+                  use_context=True)
 dispatcher = updater.dispatcher
 userService = UserService()
 global calender
+
 
 def start(update, context):
     text = "Hi!\nDies ist der Quersteller Bot. Bitte lege deinen bevorzugten Benachrichtigungsstandort mit /localHeroAt fest. \n" \
@@ -47,7 +49,7 @@ def update_location(context, update):
             context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]) + " und")
         else:
             if i != 0:
-                context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i])+",")
+                context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]) + ",")
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]))
         i -= 1
@@ -55,37 +57,40 @@ def update_location(context, update):
     STATE = QuestionStates.MORELOCATION
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sind das alle?(Ja/Nein)")
 
-def add_location(context,update):
+
+def add_location(context, update):
     global users
     text = update.message.text
     locations = text.split(',')
     for location in locations:
         location.strip()
-    userService.add_locations_to_user(locations,update.effective_chat.id)
+    userService.add_locations_to_user(locations, update.effective_chat.id)
     userService.check_for_news(userService.get_user_by_id(update.effective_chat.id))
-    context.bot.send_message(chat_id=update.effective_chat.id,text="Hab ich geupdated ^^\nIch melde mich wenn es was zu tun gibt!")
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="Hab ich geupdated ^^\nIch melde mich wenn es was zu tun gibt!")
 
 
-
-def continue_location(context,update):
+def continue_location(context, update):
     global STATE
     if update.message.text == "Ja":
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Alles klar! \n Ich werde mich wieder melden, wenn ich weiß wo wir uns das nächte mal Querstellen statt quer zu denken.")
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Alles klar! \n Ich werde mich wieder melden, wenn ich weiß wo wir uns das nächte mal Querstellen statt quer zu denken.")
         user = userService.get_user_by_id(update.effective_chat.id)
         userService.check_for_news(user)
     elif update.message.text == "Nein":
         STATE = QuestionStates.ADDLOCATION
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Welche Orte möchtest du hinzufügen? Du kannst auch ländlichere Gebiete mit einfügen :)")
-
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Welche Orte möchtest du hinzufügen? Du kannst auch ländlichere Gebiete mit einfügen :)")
 
 
 def text(update, context):
     if STATE == QuestionStates.LOCATION:
         update_location(context, update)
     elif STATE == QuestionStates.MORELOCATION:
-        continue_location(context,update)
+        continue_location(context, update)
     elif STATE == QuestionStates.ADDLOCATION:
-        add_location(context,update)
+        add_location(context, update)
+
 
 def organizeCalender():
     querdenkerCalenderUnSorted = WebService.GetCalender()
@@ -98,8 +103,6 @@ def main():
     # create the updater, that will automatically create also a dispatcher and a queue to
     # make them dialoge
     organizeCalender()
-    updater = Updater(token='1764397833:AAHigJWCNjCuhkYoBP5e8Mptv8ahji78PkU',
-                  use_context=True)
     dispatcher = updater.dispatcher
 
     # add handlers for start and help commands
@@ -111,14 +114,13 @@ def main():
     dispatcher.add_handler(MessageHandler(Filters.text, text))
 
     # add an handler for errors
-    #dispatcher.add_error_handler(error)
+    # dispatcher.add_error_handler(error)
 
     # start your shiny new bot
     updater.start_polling()
 
     # run the bot until Ctrl-C
     updater.idle()
-
 
 
 if __name__ == '__main__':
