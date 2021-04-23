@@ -1,13 +1,10 @@
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
-import requests
-import re
-import src
-from src import WebService
-from src.Calender import Calender
-from src.QuestionStates import QuestionStates
-from src.User import User
-from src.UserService import UserService
-from src.DatabaseService import DatabaseService
+from QuerstellerBotUtils.Services.UserService import UserService
+from QuerstellerBotUtils.Services.DatabaseService import DatabaseService
+from QuerstellerBotUtils.Models.QuestionStates import QuestionStates
+from QuerstellerBotUtils.Services import WebService
+from QuerstellerBotUtils.Models.Calender import Calender
+from QuerstellerBotUtils.Models.User import User
 
 STATE = None
 users = []
@@ -16,6 +13,8 @@ updater = Updater(token='1764397833:AAHigJWCNjCuhkYoBP5e8Mptv8ahji78PkU',
                   use_context=True)
 dispatcher = updater.dispatcher
 userService = UserService()
+dbService = DatabaseService()
+
 global calender
 
 
@@ -62,12 +61,15 @@ def add_location(context, update):
     global users
     text = update.message.text
     locations = text.split(',')
+    tempLocations = []
     for location in locations:
-        location.strip()
+        tempLocations.append(location.strip())
+    locations = tempLocations
     userService.add_locations_to_user(locations, update.effective_chat.id)
-    userService.check_for_news(userService.get_user_by_id(update.effective_chat.id))
     context.bot.send_message(chat_id=update.effective_chat.id,
                              text="Hab ich geupdated ^^\nIch melde mich wenn es was zu tun gibt!")
+    userService.check_for_news(userService.get_user_by_id(update.effective_chat.id))
+
 
 
 def continue_location(context, update):
@@ -95,13 +97,22 @@ def text(update, context):
 def organizeCalender():
     querdenkerCalenderUnSorted = WebService.GetCalender()
     calender = Calender(querdenkerCalenderUnSorted)
+    dbService.insert_events(calender.unsortedEvents)
     userService.add_calender(calender)
     return calender
+
+
+def update_user_location(update,context):
+    text = "Welche Orte möchtest du hinzufügen? \n Du kannst auch ländlichere gebiete einfügen :) (Bitte mit Komma trennen)"
+    context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+    STATE = QuestionStates.ADDLOCATION
+
 
 
 def main():
     # create the updater, that will automatically create also a dispatcher and a queue to
     # make them dialoge
+
     organizeCalender()
     dispatcher = updater.dispatcher
 
@@ -109,6 +120,7 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     # add an handler for our biorhythm command
     dispatcher.add_handler(CommandHandler("localHeroAt", GetPreferredLocations))
+    dispatcher.add_handler(CommandHandler("updateLocation", update_user_location))
 
     # add an handler for normal text (not commands)
     dispatcher.add_handler(MessageHandler(Filters.text, text))
