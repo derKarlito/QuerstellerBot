@@ -52,7 +52,7 @@ def update_location(context, update):
             else:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=str(locations[i]))
         i -= 1
-    userService.add_user(User(locations, context, update))
+    userService.add_user(User(locations, update))
     STATE = QuestionStates.MORELOCATION
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sind das alle?(Ja/Nein)")
 
@@ -97,6 +97,7 @@ def text(update, context):
 def organizeCalender():
     querdenkerCalenderUnSorted = WebService.GetCalender()
     calender = Calender(querdenkerCalenderUnSorted)
+    calender.convertDate()
     dbService.insert_events(calender.unsortedEvents)
     userService.add_calender(calender)
     return calender
